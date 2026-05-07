@@ -1,0 +1,3215 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Microsoft Fabric Maps: Woningnood in Flevoland</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, var(--cp-accent-soft), transparent 34rem),
+        linear-gradient(180deg, var(--cp-bg-elevated), var(--cp-bg));
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+    }
+
+    a {
+      color: var(--cp-link);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-panel-strong);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 12px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 40px;
+      color: var(--cp-link);
+    }
+
+    .brand-logo svg {
+      width: 48px;
+      height: 40px;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-text strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.98rem;
+    }
+
+    .brand-text span {
+      display: block;
+      color: var(--cp-text-muted);
+      font-size: 0.82rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a,
+    .ghost-button,
+    .primary-button {
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 9px 12px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      line-height: 1;
+      transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .nav a,
+    .ghost-button {
+      background: var(--cp-surface);
+      color: var(--cp-text);
+    }
+
+    .nav a:hover,
+    .ghost-button:hover {
+      border-color: var(--cp-border-strong);
+      background: var(--cp-surface-soft);
+    }
+
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-color: var(--cp-accent);
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .primary-button:hover {
+      border-color: var(--cp-accent-hover);
+      background: var(--cp-accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .ghost-button {
+      cursor: pointer;
+    }
+
+    .hero {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 64px 0 32px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .hero-panel,
+    .card,
+    .step-card,
+    .agenda,
+    .checklist,
+    .facilitator-note {
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+
+    .hero-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 40px;
+      background:
+        radial-gradient(circle at 88% 18%, var(--cp-highlight), transparent 12rem),
+        radial-gradient(circle at 72% 86%, var(--cp-accent-soft), transparent 16rem),
+        var(--cp-surface);
+    }
+
+    .hero-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -12% -45% 38%;
+      height: 260px;
+      border-radius: 999px;
+      background: var(--cp-accent-soft);
+      pointer-events: none;
+    }
+
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      right: 28px;
+      top: 28px;
+      width: 132px;
+      height: 132px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background:
+        linear-gradient(90deg, transparent 31%, var(--cp-border) 31%, var(--cp-border) 33%, transparent 33%, transparent 66%, var(--cp-border) 66%, var(--cp-border) 68%, transparent 68%),
+        linear-gradient(0deg, transparent 31%, var(--cp-border) 31%, var(--cp-border) 33%, transparent 33%, transparent 66%, var(--cp-border) 66%, var(--cp-border) 68%, transparent 68%),
+        var(--cp-accent-soft);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 820px;
+      margin-bottom: 18px;
+      font-size: clamp(2.25rem, 5vw, 4.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-bottom: 24px;
+      color: var(--cp-text-muted);
+      font-size: clamp(1.04rem, 2vw, 1.22rem);
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .meta-item {
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 14px;
+      background: var(--cp-accent-soft);
+      box-shadow: inset 0 0 0 1px var(--cp-sheen);
+    }
+
+    .meta-item:nth-child(2) {
+      background: var(--cp-highlight);
+    }
+
+    .meta-item:nth-child(3) {
+      border-color: var(--cp-accent);
+      background: var(--cp-surface-soft);
+    }
+
+    .meta-item strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--cp-text);
+      font-size: 1.25rem;
+    }
+
+    .meta-item span {
+      color: var(--cp-text-muted);
+      font-size: 0.86rem;
+    }
+
+    .quick-card {
+      padding: 24px;
+    }
+
+    .quick-card h2 {
+      margin-bottom: 10px;
+      font-size: 1.35rem;
+    }
+
+    .progress-ring {
+      display: grid;
+      place-items: center;
+      width: 168px;
+      height: 168px;
+      margin: 24px auto;
+      border: 10px solid var(--cp-accent);
+      border-radius: 999px;
+      background:
+        radial-gradient(circle, var(--cp-surface) 54%, var(--cp-accent-soft) 55%),
+        var(--cp-surface-soft);
+      color: var(--cp-text);
+    }
+
+    .progress-ring strong {
+      display: block;
+      font-size: 2.5rem;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      text-align: center;
+    }
+
+    .progress-ring span {
+      color: var(--cp-text-muted);
+      font-size: 0.85rem;
+    }
+
+    .quick-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .quick-list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--cp-text-muted);
+      font-size: 0.94rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      flex: 0 0 auto;
+      margin-top: 7px;
+      border-radius: 999px;
+      background: var(--cp-accent);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 80px;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      margin: 40px 0 18px;
+    }
+
+    .section-heading h2 {
+      margin-bottom: 6px;
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      letter-spacing: -0.04em;
+    }
+
+    .section-heading p {
+      max-width: 720px;
+      margin-bottom: 0;
+      color: var(--cp-text-muted);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-chip {
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: var(--cp-surface);
+      color: var(--cp-text-muted);
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+
+    .filter-chip.active {
+      border-color: var(--cp-accent);
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .step-card {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      padding: 22px;
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+
+    .step-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 6px;
+      background: var(--cp-accent);
+    }
+
+    .step-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -52px -72px auto;
+      width: 148px;
+      height: 148px;
+      border-radius: 999px;
+      background: var(--cp-accent-soft);
+      pointer-events: none;
+    }
+
+    .step-card[data-tone="success"]::before,
+    .step-card[data-tone="success"] .step-index {
+      background: var(--cp-success);
+      color: var(--cp-accent-fg);
+    }
+
+    .step-card[data-tone="warning"]::before,
+    .step-card[data-tone="warning"] .step-index {
+      background: var(--cp-warning);
+      color: var(--cp-accent-fg);
+    }
+
+    .step-card[data-tone="danger"]::before,
+    .step-card[data-tone="danger"] .step-index {
+      background: var(--cp-danger);
+      color: var(--cp-accent-fg);
+    }
+
+    .step-card[data-tone="link"]::before,
+    .step-card[data-tone="link"] .step-index {
+      background: var(--cp-link);
+      color: var(--cp-accent-fg);
+    }
+
+    .step-card:hover {
+      border-color: var(--cp-border-strong);
+      transform: translateY(-2px);
+    }
+
+    .step-index {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-weight: 800;
+    }
+
+    .step-content h3 {
+      margin-bottom: 6px;
+      font-size: 1.15rem;
+    }
+
+    .step-content p {
+      margin-bottom: 14px;
+      color: var(--cp-text-muted);
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .tag {
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-size: 0.78rem;
+      font-weight: 650;
+    }
+
+    .tag-row .tag:nth-child(2) {
+      border-color: var(--cp-border-strong);
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+    }
+
+    .tag-row .tag:nth-child(3) {
+      border-color: var(--cp-accent);
+      background: var(--cp-surface);
+      color: var(--cp-accent);
+    }
+
+    .step-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .complete-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 8px 10px;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      cursor: pointer;
+      font-size: 0.86rem;
+      font-weight: 650;
+    }
+
+    .complete-toggle.completed {
+      border-color: var(--cp-success);
+      color: var(--cp-success);
+    }
+
+    .details-link {
+      color: var(--cp-link);
+      font-weight: 650;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    .details-panel {
+      display: none;
+      grid-column: 1 / -1;
+      margin-top: -4px;
+      border-top: 1px solid var(--cp-border);
+      padding-top: 14px;
+      color: var(--cp-text-muted);
+    }
+
+    .step-card.expanded .details-panel {
+      display: block;
+    }
+
+    .details-panel ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .details-panel li + li {
+      margin-top: 6px;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .lab-section {
+      margin-top: 40px;
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .method-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      padding: 20px;
+      background: var(--cp-surface);
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+
+    .method-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: var(--cp-accent);
+    }
+
+    .method-card:nth-child(2)::before {
+      background: var(--cp-link);
+    }
+
+    .method-card:nth-child(3)::before {
+      background: var(--cp-success);
+    }
+
+    .method-card h3 {
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    .method-card p {
+      margin-bottom: 14px;
+      color: var(--cp-text-muted);
+    }
+
+    .architecture-flow {
+      display: grid;
+      gap: 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      padding: 20px;
+      background: var(--cp-accent-soft);
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-node,
+    .flow-arrow {
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-weight: 750;
+      font-size: 0.9rem;
+    }
+
+    .flow-arrow {
+      border-color: var(--cp-accent);
+      color: var(--cp-accent);
+    }
+
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .pillar-card {
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      padding: 18px;
+      background: var(--cp-surface);
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+
+    .pillar-card h3 {
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .pillar-card p {
+      margin-bottom: 0;
+      color: var(--cp-text-muted);
+      font-size: 0.94rem;
+    }
+
+    .visual-steps {
+      display: grid;
+      gap: 16px;
+    }
+
+    .visual-step {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 16px;
+      align-items: stretch;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      padding: 16px;
+      background: var(--cp-surface);
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+
+    .visual-step-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .visual-step-copy h3 {
+      margin-bottom: 0;
+      font-size: 1.05rem;
+    }
+
+    .visual-step-copy p {
+      margin-bottom: 0;
+      color: var(--cp-text-muted);
+    }
+
+    .mock-screen {
+      overflow: hidden;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+
+    .learn-screenshot {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .learn-screenshot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+    }
+
+    .learn-screenshot figcaption {
+      color: var(--cp-text-muted);
+      font-size: 0.82rem;
+    }
+
+    .screenshot-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mock-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid var(--cp-border);
+      padding: 8px 10px;
+      background: var(--cp-accent-soft);
+    }
+
+    .mock-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--cp-accent);
+    }
+
+    .mock-body {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .mock-row,
+    .mock-field,
+    .mock-map-row {
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 10px;
+      background: var(--cp-surface);
+      color: var(--cp-text-muted);
+      font-size: 0.86rem;
+    }
+
+    .mock-row.active,
+    .mock-field.active,
+    .mock-map-row.active {
+      border-color: var(--cp-accent);
+      background: var(--cp-accent-soft);
+      color: var(--cp-text);
+      font-weight: 750;
+    }
+
+    .mock-map {
+      position: relative;
+      min-height: 168px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background:
+        linear-gradient(90deg, transparent 32%, var(--cp-border) 32%, var(--cp-border) 33%, transparent 33%, transparent 66%, var(--cp-border) 66%, var(--cp-border) 67%, transparent 67%),
+        linear-gradient(0deg, transparent 32%, var(--cp-border) 32%, var(--cp-border) 33%, transparent 33%, transparent 66%, var(--cp-border) 66%, var(--cp-border) 67%, transparent 67%),
+        var(--cp-accent-soft);
+    }
+
+    .mock-pin {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 3px solid var(--cp-surface);
+      border-radius: 999px;
+      background: var(--cp-danger);
+      box-shadow: 0 0 0 1px var(--cp-border);
+    }
+
+    .mock-pin:nth-child(1) {
+      left: 24%;
+      top: 48%;
+    }
+
+    .mock-pin:nth-child(2) {
+      left: 58%;
+      top: 34%;
+      background: var(--cp-warning);
+    }
+
+    .mock-pin:nth-child(3) {
+      left: 72%;
+      top: 62%;
+      background: var(--cp-success);
+    }
+
+    .code-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .code-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+      overflow: hidden;
+    }
+
+    .code-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 6px;
+      background: var(--cp-accent);
+    }
+
+    .code-card:nth-child(2)::before {
+      background: var(--cp-link);
+    }
+
+    .code-card:nth-child(3)::before {
+      background: var(--cp-warning);
+    }
+
+    .code-card:nth-child(4)::before {
+      background: var(--cp-success);
+    }
+
+    .code-card:nth-child(5)::before {
+      background: var(--cp-danger);
+    }
+
+    .code-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--cp-border);
+      padding: 16px;
+      background: var(--cp-accent-soft);
+    }
+
+    .notebook-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: var(--cp-surface);
+      color: var(--cp-accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .code-card-header h3 {
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .code-card-header p {
+      margin-bottom: 0;
+      color: var(--cp-text-muted);
+      font-size: 0.88rem;
+    }
+
+    .copy-code {
+      flex: 0 0 auto;
+      border: 1px solid var(--cp-accent);
+      border-radius: 0.625rem;
+      padding: 8px 10px;
+      background: var(--cp-surface);
+      color: var(--cp-accent);
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 0.82rem;
+    }
+
+    .code-card pre {
+      margin: 0;
+      padding: 16px;
+      overflow: auto;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      white-space: pre;
+    }
+
+    .code-card code {
+      font-family: Consolas, "Courier New", Courier, monospace;
+    }
+
+    .ui-shot {
+      margin: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      overflow: hidden;
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+
+    .ui-shot-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--cp-border);
+      padding: 14px 16px 8px;
+      background: var(--cp-surface-soft);
+    }
+
+    .ui-shot-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 2px solid var(--cp-accent);
+      border-radius: 0.625rem;
+      color: var(--cp-accent);
+      font-weight: 900;
+    }
+
+    .ui-shot-title strong {
+      display: block;
+      font-size: 1.25rem;
+    }
+
+    .ui-shot-title span {
+      display: block;
+      color: var(--cp-text-muted);
+      font-size: 0.88rem;
+    }
+
+    .ui-shot-toolbar,
+    .ui-shot-tabs {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+      background: var(--cp-surface);
+    }
+
+    .ui-shot-tabs {
+      border-bottom: 1px solid var(--cp-border);
+      gap: 28px;
+      font-weight: 650;
+    }
+
+    .ui-shot-tab-active {
+      color: var(--cp-accent);
+      border-bottom: 3px solid var(--cp-accent);
+      padding-bottom: 6px;
+    }
+
+    .ui-shot-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--cp-border-strong);
+      border-radius: 0.625rem;
+      padding: 8px 12px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-weight: 750;
+    }
+
+    .ui-shot-plus {
+      color: var(--cp-accent);
+      font-size: 1.45rem;
+      line-height: 1;
+    }
+
+    .ui-shot-emphasis {
+      border-color: var(--cp-accent);
+      box-shadow: inset 0 0 0 1px var(--cp-accent-soft);
+    }
+
+    .ui-shot-panel {
+      padding: 16px;
+      background: var(--cp-surface);
+    }
+
+    .ui-shot-panel h4 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+    }
+
+    .ui-shot-note {
+      margin: 10px 16px 16px;
+      color: var(--cp-text-muted);
+      font-size: 0.9rem;
+    }
+
+    .new-item-image {
+      margin: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      overflow: hidden;
+      box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+    }
+
+    .new-item-image img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .new-item-image figcaption {
+      border-top: 1px solid var(--cp-border);
+      padding: 10px 12px;
+      color: var(--cp-text-muted);
+      font-size: 0.9rem;
+    }
+
+    .agenda,
+    .checklist {
+      padding: 24px;
+    }
+
+    .agenda-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 0.625rem;
+    }
+
+    .agenda-table th,
+    .agenda-table td {
+      border-bottom: 1px solid var(--cp-border);
+      padding: 12px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .agenda-table th {
+      color: var(--cp-text-muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .agenda-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .agenda-table tbody tr:nth-child(odd) {
+      background: var(--cp-surface-soft);
+    }
+
+    .agenda-table tbody tr:hover {
+      background: var(--cp-accent-soft);
+    }
+
+    .agenda-table td:first-child {
+      width: 112px;
+      color: var(--cp-accent);
+      font-weight: 750;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-weight: 750;
+      font-size: 0.82rem;
+    }
+
+    .badge-low {
+      border-color: var(--cp-success);
+      background: var(--cp-surface);
+      color: var(--cp-success);
+    }
+
+    .badge-mid {
+      border-color: var(--cp-warning);
+      background: var(--cp-surface);
+      color: var(--cp-warning);
+    }
+
+    .badge-high {
+      border-color: var(--cp-danger);
+      background: var(--cp-surface);
+      color: var(--cp-danger);
+    }
+
+    .answer-yes {
+      color: var(--cp-success);
+      font-weight: 750;
+    }
+
+    .answer-partial {
+      color: var(--cp-warning);
+      font-weight: 750;
+    }
+
+    .answer-no {
+      color: var(--cp-danger);
+      font-weight: 750;
+    }
+
+    .checklist-items {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 12px;
+      background: var(--cp-accent-soft);
+    }
+
+    .check-item input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--cp-accent);
+    }
+
+    .check-item span {
+      color: var(--cp-text-muted);
+      font-size: 0.94rem;
+    }
+
+    .resources {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      padding: 22px;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: var(--cp-accent);
+    }
+
+    .resources .card:nth-child(2)::before {
+      background: var(--cp-warning);
+    }
+
+    .resources .card:nth-child(3)::before {
+      background: var(--cp-success);
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    .card p {
+      color: var(--cp-text-muted);
+    }
+
+    .card code {
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 2px 6px;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 0.88em;
+    }
+
+    .facilitator-note {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-top: 16px;
+      padding: 22px;
+      background: var(--cp-accent-soft);
+    }
+
+    .facilitator-note p {
+      margin-bottom: 0;
+      color: var(--cp-text-muted);
+    }
+
+    .footer {
+      border-top: 1px solid var(--cp-border);
+      padding: 28px 0 40px;
+      color: var(--cp-text-muted);
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 30;
+      max-width: 320px;
+      transform: translateY(16px);
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 12px 14px;
+      background: var(--cp-panel-strong);
+      color: var(--cp-text);
+      box-shadow: var(--cp-shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid,
+      .two-column,
+      .method-grid,
+      .pillar-grid,
+      .visual-step,
+      .steps,
+      .code-grid,
+      .resources {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .hero {
+        padding-top: 40px;
+      }
+
+      .hero-panel,
+      .quick-card,
+      .agenda,
+      .checklist,
+      .card,
+      .facilitator-note {
+        padding: 18px;
+      }
+
+      .meta-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .step-card {
+        grid-template-columns: 1fr;
+      }
+
+      .facilitator-note {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="#top" aria-label="Terug naar boven">
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 96 80" role="img" focusable="false">
+              <defs>
+                <linearGradient id="fabric-top" x1="8" y1="20" x2="91" y2="4" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="var(--cp-link)" stop-opacity="0.52"/>
+                  <stop offset="0.5" stop-color="var(--cp-link)" stop-opacity="0.82"/>
+                  <stop offset="1" stop-color="var(--cp-success)" stop-opacity="0.75"/>
+                </linearGradient>
+                <linearGradient id="fabric-bottom" x1="13" y1="74" x2="61" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="var(--cp-link)" stop-opacity="0.95"/>
+                  <stop offset="0.45" stop-color="var(--cp-success)" stop-opacity="0.82"/>
+                  <stop offset="1" stop-color="var(--cp-text)" stop-opacity="0.44"/>
+                </linearGradient>
+              </defs>
+              <path d="M19 35.5c3.7-14.5 10-22 24.5-24.2L84.5 5c5.8-.9 9.7 4.2 8.1 9.8l-7.2 25.8c-1.1 4-4.2 6.8-8.4 7.4L24.2 55.6c-7.2 1.1-11.4-3.9-9.3-10.8l4.1-9.3Z" fill="url(#fabric-top)"/>
+              <path d="M8.1 72.8 22.7 23c2-6.7 7.4-11.1 14.4-12.1L60 7.4 43.9 65.7c-1.1 4.2-4.4 7.1-8.7 7.7L18.8 75.5c-7.7 1-12.9-4.9-10.7-12.7v10Z" fill="url(#fabric-bottom)"/>
+              <path d="M12.7 58.2c4-8.8 10.8-13.7 20.8-15.1l48.8-7.1-.9 3.2c-1.2 4.4-4.9 7.4-9.5 8L26.2 53.8c-6.1.9-10.2 2.7-13.5 4.4Z" fill="var(--cp-sheen)" opacity="0.72"/>
+            </svg>
+          </span>
+          <span class="brand-text">
+            <strong>Microsoft Fabric Maps</strong>
+            <span>Woningnood in Flevoland</span>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Workshopnavigatie">
+          <a href="#steps">Onderdelen</a>
+          <a href="#deel-1-lab">Code lab</a>
+          <a href="#deel-2-pipeline">Deel II</a>
+          <a href="#agenda">Agenda</a>
+          <a href="#prepare">Voorbereiding</a>
+          <a href="#resources">Resultaten</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero" id="top">
+      <div class="hero-grid">
+        <div class="hero-panel">
+          <span class="eyebrow">90 minuten hands-on Microsoft Fabric</span>
+          <h1>Microsoft Fabric Maps: Woningnood in Flevoland.</h1>
+          <p class="lead">
+            Een compacte klantworkshop voor gemeenten, ruimtelijke planners,
+            beleidsmedewerkers wonen en data-/BI-specialisten. De casus: de woningnood
+            in Flevoland vertalen naar verantwoord kaartgedreven plannen met openbare
+            geo-data, Microsoft Fabric Maps en rolgebaseerde kaartlagen.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#steps">Start de workshop</a>
+            <button class="ghost-button" type="button" id="copyAgenda">Kopieer agenda</button>
+          </div>
+          <div class="meta-strip" aria-label="Workshopsamenvatting">
+            <div class="meta-item">
+              <strong>90 min</strong>
+              <span>Microsoft Fabric workshop</span>
+            </div>
+            <div class="meta-item">
+              <strong>2 delen</strong>
+              <span>WMS-laag inladen</span>
+            </div>
+            <div class="meta-item">
+              <strong>3 views</strong>
+              <span>planner, bestuurder, publiek</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="card quick-card" aria-label="Workshopvoortgang">
+          <h2>Workshopvoortgang</h2>
+          <p>Vink onderdelen af terwijl de groep door de 90-minuten flow gaat.</p>
+          <div class="progress-ring" aria-live="polite">
+            <div>
+              <strong id="progressValue">0%</strong>
+              <span id="progressLabel">0 van 8 afgerond</span>
+            </div>
+          </div>
+          <ul class="quick-list">
+            <li><span class="dot"></span><span>Doelgroep: gemeenten, ruimtelijke planners, wonen, beleid en data-/BI-specialisten.</span></li>
+            <li><span class="dot"></span><span>Gebruik fictieve projectlocaties zodat geen gevoelige gemeentelijke plannen zichtbaar zijn.</span></li>
+            <li><span class="dot"></span><span>Eindresultaat: gedeeld begrip van openbare lagen, geo-data, governance en Microsoft Fabric Maps.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <main>
+      <section id="steps" aria-labelledby="steps-title">
+        <div class="section-heading">
+          <div>
+              <h2 id="steps-title">Workshoponderdelen</h2>
+              <p>
+                Volg de onderdelen in volgorde of filter op perspectief: beleid,
+                data/platform of governance. De rode draad is een woningbouwcasus
+                met openbare geo-data en gemeentelijke plandata.
+              </p>
+          </div>
+          <div class="filters" aria-label="Filter onderdelen">
+            <button class="filter-chip active" type="button" data-filter="all">Alles</button>
+            <button class="filter-chip" type="button" data-filter="business">Beleid</button>
+            <button class="filter-chip" type="button" data-filter="engineering">Data & platform</button>
+            <button class="filter-chip" type="button" data-filter="governance">Governance</button>
+          </div>
+        </div>
+
+        <div class="steps" id="stepList">
+          <article class="step-card" data-category="business governance" data-step="1" data-tone="link">
+            <div class="step-index">01</div>
+            <div class="step-content">
+              <h3>Opening en woningbouwcasus</h3>
+              <p>Start met de beleidsvraag: welke kandidaatlocaties zijn kansrijk, risicovol of vragen nader onderzoek?</p>
+              <div class="tag-row">
+                <span class="tag">0-5 min</span>
+                <span class="tag">Woningbouw</span>
+                <span class="tag">Beleidsvraag</span>
+              </div>
+              <div class="step-actions">
+                <button class="complete-toggle" type="button">Markeer afgerond</button>
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Open met: "Een gemeente moet nieuwe woningen plannen, maar locaties liggen mogelijk nabij natuur, water, infrastructuur of beleidszones."</li>
+                <li>Laat direct het eindbeeld zien: kaart met woningbouwlocaties, openbare contextlagen en risicokleuren.</li>
+                <li>Begin niet met technologie, maar met de bestuurlijke en ruimtelijke afweging.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="step-card" data-category="business engineering governance" data-step="2" data-tone="success">
+            <div class="step-index">02</div>
+            <div class="step-content">
+              <h3>Fabric Maps in gemeentelijke context</h3>
+              <p>Leg uit waarom kaartgedreven inzichten waarde toevoegen aan planning, monitoring en besluitvorming.</p>
+              <div class="tag-row">
+                <span class="tag">5-15 min</span>
+                <span class="tag">Fabric Maps</span>
+                <span class="tag">Gemeente</span>
+              </div>
+              <div class="step-actions">
+                <button class="complete-toggle" type="button">Markeer afgerond</button>
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Behandel het verschil tussen kaartlaag, dataset en rapport.</li>
+                <li>Positioneer WMS voor publieke kaartlagen en Lakehouse/OneLake voor eigen data.</li>
+                <li>Kernboodschap: Fabric Maps maakt geo-inzichten onderdeel van het dataplatform, niet alleen van een aparte GIS-afdeling.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="step-card" data-category="business engineering" data-step="3" data-tone="warning">
+            <div class="step-index">03</div>
+            <div class="step-content">
+              <h3>Deel I: WMS-laag inladen</h3>
+              <p>Log eerst in op Microsoft Fabric, maak daarna een CHS WMS-connectie en toon de openbare kaartlaag als externe imagery layer in Fabric Maps.</p>
+              <div class="tag-row">
+                <span class="tag">15-35 min</span>
+                <span class="tag">1.1 WMS</span>
+                <span class="tag">External source</span>
+              </div>
+              <div class="step-actions">
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Laat deelnemers eerst inloggen via <a href="https://app.fabric.microsoft.com/" target="_blank" rel="noreferrer">https://app.fabric.microsoft.com/</a>.</li>
+                <li>Maak daarna een Fabric Maps cloud connection en toon de CHS WMS-laag als externe imagery layer.</li>
+                <li>Laat deelnemers de WMS-link kopiëren, de connection aanmaken en de laag zichtbaar maken op de kaart.</li>
+                <li>Bespreek transparantie, laagvolgorde en wanneer WMS vooral geschikt is voor context en interpretatie.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="step-card" data-category="engineering" data-step="4" data-tone="danger">
+            <div class="step-index">04</div>
+            <div class="step-content">
+              <h3>Interactieve kaartinzichten</h3>
+              <p>Combineer fictieve woningbouwlocaties met openbare contextlagen en bespreek eerste inzichten.</p>
+              <div class="tag-row">
+                <span class="tag">35-45 min</span>
+                <span class="tag">Begeleide oefening</span>
+                <span class="tag">Risico</span>
+              </div>
+              <div class="step-actions">
+                <button class="complete-toggle" type="button">Markeer afgerond</button>
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Vraag: welke locatie lijkt kansrijk, welke vraagt nader onderzoek en welke lijkt risicovol?</li>
+                <li>Gebruik eenvoudige risicokleuren en filters op fase, capaciteit en prioriteit.</li>
+                <li>Sluit af met de overgang: van kijken naar combineren met eigen data.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="step-card" data-category="business engineering" data-step="5" data-tone="link">
+            <div class="step-index">05</div>
+            <div class="step-content">
+              <h3>Deel II: Flevoland pipeline en Data Agent</h3>
+              <p>Bouw een complete geo-analytische oplossing: PDOK WFS, medallion-lagen, Fabric Maps en een Nederlandstalige Data Agent.</p>
+              <div class="tag-row">
+                <span class="tag">50-70 min</span>
+                <span class="tag">Sedona</span>
+                <span class="tag">Data Agent</span>
+              </div>
+              <div class="step-actions">
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Activeer Apache Sedona in een Fabric notebook voor ruimtelijke SQL-functies zoals ST_Intersects, ST_Distance en ST_Transform.</li>
+                <li>Werk volgens Bronze, Silver en Gold: ruwe PDOK-data, Flevoland-filtering, OV-bereikbaarheid en woningverdeling.</li>
+                <li>Publiceer GeoJSON naar Fabric Maps en bouw een Nederlandstalige Data Agent voor strategische Woondeal-vragen.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="step-card" data-category="business governance" data-step="6" data-tone="warning">
+            <div class="step-index">06</div>
+            <div class="step-content">
+              <h3>Governance en rolgebaseerde kaartlagen</h3>
+              <p>Bepaal welke kaartlagen zichtbaar zijn voor planner, bestuurder, vergunningverlener, partner en publiek.</p>
+              <div class="tag-row">
+                <span class="tag">70-82 min</span>
+                <span class="tag">Rollen</span>
+                <span class="tag">Views</span>
+              </div>
+              <div class="step-actions">
+                <button class="complete-toggle" type="button">Markeer afgerond</button>
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Maak concreet dat niet elke rol dezelfde kaartlagen mag zien.</li>
+                <li>Laat deelnemers per laag kiezen: openbaar, intern of vertrouwelijk; publiek dashboard ja/nee; detailniveau samenvatten of niet.</li>
+                <li>Koppel aan workspace- en itemrechten, rapportdoelgroepen, sensitivity labels, endorsement, lineage en RLS/OLS waar passend.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="step-card" data-category="governance" data-step="7" data-tone="danger">
+            <div class="step-index">07</div>
+            <div class="step-content">
+              <h3>Eindopdracht: bestuurlijk advies</h3>
+              <p>Vertaal kaart en data naar een korte bestuurlijke aanbeveling over kansrijke en risicovolle locaties.</p>
+              <div class="tag-row">
+                <span class="tag">82-88 min</span>
+                <span class="tag">Advies</span>
+                <span class="tag">Besluitvorming</span>
+              </div>
+              <div class="step-actions">
+                <button class="complete-toggle" type="button">Markeer afgerond</button>
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Vraag: welke twee locaties zijn kansrijk, welke locatie vraagt nader onderzoek en welke informatie hoort in de bestuurder-view versus publieke-view?</li>
+                <li>Gebruik het format: kansrijke locatie, nader onderzoek, hoogste risico, zichtbaar voor bestuurder, zichtbaar voor publiek.</li>
+                <li>Eindig met besluitvorming, niet alleen met technologie.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="step-card" data-category="business governance engineering" data-step="8" data-tone="success">
+            <div class="step-index">08</div>
+            <div class="step-content">
+              <h3>Afsluiting en vervolgstappen</h3>
+              <p>Vat de drie kernboodschappen samen en maak duidelijk wat vooraf klaar moet staan voor herhaalbare workshops.</p>
+              <div class="tag-row">
+                <span class="tag">88-90 min</span>
+                <span class="tag">Afronding</span>
+                <span class="tag">Resultaten</span>
+              </div>
+              <div class="step-actions">
+                <button class="complete-toggle" type="button">Markeer afgerond</button>
+                <a class="details-link" href="#">Toon begeleiding</a>
+              </div>
+            </div>
+            <div class="details-panel">
+              <ul>
+                <li>Openbare WMS-lagen geven snel ruimtelijke context.</li>
+                <li>Lakehouse, OneLake en Eventhouse maken kaarten onderdeel van het dataplatform.</li>
+                <li>Governance bepaalt niet alleen wie het rapport ziet, maar ook welke kaartlagen per rol zichtbaar zijn.</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="lab-section" id="deel-1-lab" aria-labelledby="deel-1-lab-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="deel-1-lab-title">Deel I lab: WMS-laag inladen</h2>
+            <p>
+              Start met inloggen op Microsoft Fabric. Maak daarna een WMS-connectie voor direct kaartbeeld
+              en gebruik de openbare CHS-laag als contextlaag in Fabric Maps.
+            </p>
+          </div>
+        </div>
+
+        <div class="method-grid" aria-label="WMS-laag in Deel I gebruiken">
+          <article class="method-card">
+            <span class="notebook-step">1.0</span>
+            <h3>Inloggen op Microsoft Fabric</h3>
+            <p>Iedere deelnemer opent eerst de Fabric login-pagina en controleert of de juiste tenant en workspace zichtbaar zijn.</p>
+            <a class="primary-button" href="https://app.fabric.microsoft.com/" target="_blank" rel="noreferrer">Open Fabric login</a>
+          </article>
+          <article class="method-card">
+            <span class="notebook-step">1.1</span>
+            <h3>WMS-laag als externe imagery layer</h3>
+            <p>Geen data kopiëren: Fabric Maps rendert de openbare CHS-kaartlaag rechtstreeks via de WMS-service.</p>
+            <button class="copy-code" type="button" data-copy-target="snippet-wms-chs">Kopieer WMS-link</button>
+          </article>
+        </div>
+
+        <section class="lab-section" id="wms-visual-lab" aria-labelledby="wms-visual-lab-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="wms-visual-lab-title">1.1 Inloggen en WMS-laag inladen in Fabric Maps</h2>
+              <p>
+                Start via de Fabric login-pagina. Daarna volgt de Fabric Maps flow voor externe imagery layers:
+                eerst een cloud connection maken, daarna de source toevoegen aan de kaart en de laag tonen.
+              </p>
+            </div>
+          </div>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Login</span>
+                <h3>Open de Fabric login-pagina</h3>
+                <p>Laat deelnemers eerst inloggen en controleren dat ze toegang hebben tot de workshopworkspace.</p>
+              </div>
+              <a class="primary-button" href="https://app.fabric.microsoft.com/" target="_blank" rel="noreferrer">Open Fabric</a>
+            </div>
+            <pre><code>https://app.fabric.microsoft.com/</code></pre>
+          </article>
+
+          <div class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">WMS endpoint</span>
+                <h3>CHS Zeeland WMS GetCapabilities</h3>
+                <p>Gebruik deze URL als WMS-bron voor de workshoplaag.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="snippet-wms-chs">Kopieer</button>
+            </div>
+            <pre><code id="snippet-wms-chs">https://opengeodata.zeeland.nl/geoserver/chs/wms?request=GetCapabilities</code></pre>
+          </div>
+
+          <div class="visual-steps">
+            <article class="visual-step">
+              <div class="visual-step-copy">
+                <span class="notebook-step">Stap 0</span>
+                <h3>Log in op Microsoft Fabric</h3>
+                <p>Open <a href="https://app.fabric.microsoft.com/" target="_blank" rel="noreferrer">app.fabric.microsoft.com</a>, meld je aan en open de workspace <strong>Maps Workshop</strong> voordat je items of connections aanmaakt.</p>
+              </div>
+              <div class="ui-shot" aria-label="Fabric login en workspace openen">
+                <div class="ui-shot-title">
+                  <div class="ui-shot-icon">→</div>
+                  <div>
+                    <strong>app.fabric.microsoft.com</strong>
+                    <span>Login page voor Microsoft Fabric</span>
+                  </div>
+                </div>
+                <div class="ui-shot-toolbar">
+                  <span class="ui-shot-button ui-shot-emphasis">Open Fabric</span>
+                  <span class="ui-shot-button">Sign in</span>
+                  <span class="ui-shot-button">Maps Workshop</span>
+                </div>
+                <p class="ui-shot-note">Controleer na het inloggen dat de juiste tenant en workshopworkspace zichtbaar zijn.</p>
+              </div>
+            </article>
+
+            <article class="visual-step">
+              <div class="visual-step-copy">
+                <span class="notebook-step">Stap 1</span>
+                <h3>Maak een Fabric Maps cloud connection</h3>
+                <p>Open in Fabric de gebruikersinstellingen en ga naar <strong>Manage connections and gateways</strong>. Kies <strong>New</strong> en daarna <strong>Cloud connection</strong>.</p>
+              </div>
+              <div class="screenshot-stack">
+                <figure class="learn-screenshot">
+                  <img src="https://learn.microsoft.com/en-us/fabric/real-time-intelligence/map/media/layers/user-settings.png" alt="Microsoft Fabric user settings menu met Settings geselecteerd">
+                  <figcaption>1. Open User settings in Fabric.</figcaption>
+                </figure>
+                <figure class="learn-screenshot">
+                  <img src="https://learn.microsoft.com/en-us/fabric/real-time-intelligence/map/media/layers/new-connection.png" alt="Manage connections and gateways met New-knop gemarkeerd">
+                  <figcaption>2. Kies Manage connections and gateways en maak een nieuwe cloud connection.</figcaption>
+                </figure>
+              </div>
+            </article>
+
+            <article class="visual-step">
+              <div class="visual-step-copy">
+                <span class="notebook-step">Stap 2</span>
+                <h3>Configureer de WMS-connectie</h3>
+                <p>Kies <strong>Connection type: Fabric Maps</strong>, vul de WMS URL in, kies <strong>Protocol: WMS</strong>, authentication <strong>Anonymous</strong> en privacy level passend bij de workshop.</p>
+              </div>
+              <div class="screenshot-stack">
+                <figure class="learn-screenshot">
+                  <img src="https://learn.microsoft.com/en-us/fabric/real-time-intelligence/map/media/layers/fabric-maps-connection-type.png" alt="New connection dialoog met Fabric Maps als connection type">
+                  <figcaption>1. Selecteer Fabric Maps als connection type.</figcaption>
+                </figure>
+                <figure class="learn-screenshot">
+                  <img src="https://learn.microsoft.com/en-us/fabric/real-time-intelligence/map/media/layers/fabric-maps-connection-settings.png" alt="Fabric Maps connection settings met base URL, protocol, authentication en privacy level">
+                  <figcaption>2. Vul Base URL, Protocol WMS, Authentication en Privacy level in.</figcaption>
+                </figure>
+              </div>
+            </article>
+
+            <article class="visual-step">
+              <div class="visual-step-copy">
+                <span class="notebook-step">Stap 3</span>
+                <h3>Voeg de externe source toe aan de kaart</h3>
+                <p>Open je Fabric Map, ga naar <strong>External sources</strong>, kies <strong>Add sources</strong>, selecteer de gemaakte WMS-connectie en klik <strong>Add</strong>.</p>
+              </div>
+              <div class="screenshot-stack">
+                <figure class="learn-screenshot">
+                  <img src="https://learn.microsoft.com/en-us/fabric/real-time-intelligence/map/media/layers/add-source.png" alt="External sources tab in Fabric Maps met Add sources knop">
+                  <figcaption>1. Open External sources en kies Add sources.</figcaption>
+                </figure>
+                <figure class="learn-screenshot">
+                  <img src="https://learn.microsoft.com/en-us/fabric/real-time-intelligence/map/media/layers/add-connection.png" alt="Choose data source dialoog met connection dropdown en Add knop">
+                  <figcaption>2. Selecteer de WMS-connection en klik Add.</figcaption>
+                </figure>
+              </div>
+            </article>
+
+            <article class="visual-step">
+              <div class="visual-step-copy">
+                <span class="notebook-step">Stap 4</span>
+                <h3>Toon de laag op de kaart</h3>
+                <p>Vouw de connection open, kies de gewenste imagery layer en gebruik <strong>Show on map</strong>. Pas daarna transparantie, laagvolgorde en zichtbaarheid aan.</p>
+              </div>
+              <figure class="learn-screenshot">
+                <img src="https://learn.microsoft.com/en-us/fabric/real-time-intelligence/map/media/layers/show-on-map.png" alt="Fabric Maps external sources met Show on map optie voor een imagery layer">
+                <figcaption>Vouw de connection open, kies de laag en selecteer Show on map.</figcaption>
+              </figure>
+            </article>
+          </div>
+        </section>
+
+        <aside class="facilitator-note">
+          <div>
+            <h3>Afronding Deel I</h3>
+            <p>
+              Rond Deel I af zodra de CHS WMS-laag zichtbaar is op de kaart en deelnemers
+              begrijpen dat WMS vooral context en interpretatie levert.
+            </p>
+          </div>
+          <button
+            class="complete-toggle"
+            type="button"
+            data-complete-step="3"
+            data-label="Markeer Deel I afgerond"
+            data-completed-label="Deel I afgerond"
+          >Markeer Deel I afgerond</button>
+        </aside>
+
+      </section>
+
+      <section class="lab-section" id="deel-2-pipeline" aria-labelledby="deel-2-pipeline-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="deel-2-pipeline-title">Workshop Microsoft Fabric Maps — Woningplanning Provincie Flevoland</h2>
+            <p>
+              Het volledige stappenplan voor de hoofd-demo: PDOK open data inladen,
+              ruimtelijk transformeren met Apache Sedona, visualiseren in Fabric Maps
+              en bevragen via een Nederlandstalige Data Agent in één Microsoft Fabric werkruimte.
+            </p>
+          </div>
+        </div>
+
+        <aside class="facilitator-note">
+          <div>
+            <h3>Doel en architectuur</h3>
+            <p>
+              Bouw een end-to-end demo waarin Bronze GeoJSON, Silver Sedona-views,
+              Gold-analyse, Fabric Maps en een Data Agent samen één uitlegbaar
+              woningplanningsscenario vormen voor Provincie Flevoland.
+            </p>
+          </div>
+          <a class="primary-button" href="#agenda">Bekijk 90-minuten agenda</a>
+        </aside>
+
+        <div class="architecture-flow" aria-label="Architectuur van Deel II">
+          <span class="notebook-step">Architectuur</span>
+          <div class="flow-row">
+            <span class="flow-node">PDOK WFS</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Bronze GeoJSON</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Silver Sedona</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Gold analyse</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Fabric Maps</span>
+            <span class="flow-node">Data Agent</span>
+          </div>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <h2>Deel 1 — Setup</h2>
+            <p>Maak de Fabric-omgeving klaar voordat de data pipeline wordt uitgevoerd.</p>
+          </div>
+        </div>
+
+        <div class="code-grid">
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 1</span>
+                <h3>Fabric workspace en Lakehouse aanmaken</h3>
+                <p>Klik in de workspace eerst op <strong>New item</strong>, kies daarna <strong>Lakehouse</strong>, geef het item de naam <code>test</code> en zet twee Files-mappen klaar.</p>
+              </div>
+            </div>
+            <figure class="new-item-image">
+              <img src="https://learn.microsoft.com/en-us/fabric/data-engineering/media/create-lakehouse/new-lakehouse-menu.png" alt="Microsoft Learn screenshot met de Lakehouse-optie in het New item-menu">
+              <figcaption>Gebruik <strong>New item</strong> en kies <strong>Lakehouse</strong>. Bron: Microsoft Learn, Create a lakehouse.</figcaption>
+            </figure>
+            <pre><code>Workspace → New → Lakehouse
+Naam: test
+
+Files/bronze/  — ruwe GeoJSON-bestanden
+Files/maps/    — slim-versies voor Fabric Maps</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 2</span>
+                <h3>Notebook aanmaken vanuit het Lakehouse</h3>
+                <p>Open Lakehouse <code>test</code> en kies in de toolbar <strong>Open notebook → New notebook</strong>. De notebook wordt dan direct vanuit de Lakehouse-context gestart.</p>
+              </div>
+            </div>
+            <figure class="new-item-image">
+              <img src="fabric-lakehouse-open-notebook.svg" alt="Lakehouse toolbar met Open notebook en New notebook optie">
+              <figcaption>Maak de notebook aan vanuit het Lakehouse via <strong>Open notebook → New notebook</strong>.</figcaption>
+            </figure>
+            <pre><code>Lakehouse test → Open notebook → New notebook
+Naam: woningplanning
+
+Controleer daarna dat Lakehouse test beschikbaar is in de notebook.</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 3a</span>
+                <h3>Apache Sedona configureren — JARs laden</h3>
+                <p>Deze configuratie moet de eerste cell in de notebook zijn.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="sedona-config-full">Kopieer</button>
+            </div>
+            <pre><code id="sedona-config-full">%%configure -f
+{
+    "conf": {
+        "spark.jars.packages": "org.apache.sedona:sedona-spark-3.4_2.12:1.5.1,org.datasyslab:geotools-wrapper:1.5.1-28.2",
+        "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+        "spark.kryo.registrator": "org.apache.sedona.core.serde.SedonaKryoRegistrator"
+    }
+}</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 3b</span>
+                <h3>Python-bindings installeren en SedonaContext maken</h3>
+                <p>Installeer de Python package en initialiseer Sedona bovenop Spark.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="sedona-python-full">Kopieer</button>
+            </div>
+            <pre><code id="sedona-python-full">%pip install apache-sedona==1.5.1
+
+from sedona.spark import SedonaContext
+
+config = SedonaContext.builder().getOrCreate()
+sedona = SedonaContext.create(config)</code></pre>
+          </article>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <h2>Deel 2 — Data pipeline</h2>
+            <p>Laad de GeoJSON-bronnen, maak Bronze/Silver/Gold en materialiseer tabellen voor de Data Agent.</p>
+          </div>
+        </div>
+
+        <div class="code-grid">
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Bronnen</span>
+                <h3>Welke open databronnen gebruiken we?</h3>
+                <p>
+                  Voor de Flevoland-demo gebruiken we drie GeoJSON-bronnen. Samen vormen ze de minimale ruimtelijke context
+                  om buurten te filteren, OV-bereikbaarheid te berekenen en een uitlegbare woningverdeling te maken.
+                </p>
+              </div>
+            </div>
+            <table class="agenda-table">
+              <thead>
+                <tr>
+                  <th>Bestand</th>
+                  <th>Bron</th>
+                  <th>Waarom nodig?</th>
+                  <th>Rol in pipeline</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>provincies.geojson</code></td>
+                  <td>PDOK BRK Bestuurlijke Gebieden</td>
+                  <td>Levert de provinciegrens van Flevoland. Die grens bepaalt het studiegebied.</td>
+                  <td>Wordt <code>silver_flevoland</code> en fungeert als ruimtelijk filter.</td>
+                </tr>
+                <tr>
+                  <td><code>buurten.geojson</code></td>
+                  <td>PDOK / CBS Wijken en Buurten 2024</td>
+                  <td>Levert buurtpolygonen plus CBS-kenmerken zoals inwoners, woningvoorraad en leegstand.</td>
+                  <td>Wordt opgeschoond naar <code>silver_buurten</code> en vormt de basis voor de woningopgave.</td>
+                </tr>
+                <tr>
+                  <td><code>stations.geojson</code></td>
+                  <td>NS open data</td>
+                  <td>Levert treinstations als puntenlaag voor OV-bereikbaarheid.</td>
+                  <td>Wordt <code>silver_stations</code>; daarna gebruiken we afstand en buffers in Gold.</td>
+                </tr>
+              </tbody>
+            </table>
+            <ul class="rules">
+              <li><strong>Waarom GeoJSON?</strong> GeoJSON bevat echte geometrie en attributen, waardoor we ruimtelijke berekeningen kunnen uitvoeren.</li>
+              <li><strong>Waarom geen WMS hier?</strong> WMS is geschikt als kaartbeeld, maar niet voor berekeningen zoals <code>ST_Intersects</code>, <code>ST_Distance</code> en <code>ST_Buffer</code>.</li>
+              <li><strong>Waarom EPSG:28992?</strong> RD New is het Nederlandse coördinatenstelsel in meters; daardoor zijn afstanden en buffers logisch te interpreteren.</li>
+              <li><strong>Waarom later EPSG:4326?</strong> Fabric Maps verwacht latitude/longitude, dus bij export transformeren we naar WGS84.</li>
+            </ul>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 5</span>
+                <h3>PDOK GeoJSON's uploaden</h3>
+                <p>Upload de drie bronbestanden naar <code>Files/bronze/</code>. Alle bestanden staan in EPSG:28992, RD New.</p>
+              </div>
+            </div>
+            <table class="agenda-table">
+              <thead>
+                <tr><th>Bestand</th><th>Bron</th><th>Inhoud</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>provincies.geojson</code></td><td>PDOK BRK Bestuurlijke Gebieden</td><td>Provinciegrenzen</td></tr>
+                <tr><td><code>buurten.geojson</code></td><td>PDOK Wijken/Buurten 2024</td><td>Buurten + CBS-statistieken</td></tr>
+                <tr><td><code>stations.geojson</code></td><td>NS open data</td><td>Treinstations</td></tr>
+              </tbody>
+            </table>
+            <p>
+              Download de zip lokaal, pak hem uit en upload daarna de drie GeoJSON-bestanden naar
+              <code>Files/bronze/</code> in het Lakehouse.
+            </p>
+            <a class="primary-button" href="buurten.zip" download>Download bronbestanden</a>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 6</span>
+                <h3>Bronze: GeoJSON inladen als Sedona views</h3>
+                <p>We parsen GeoJSON zelf in Python, omdat Fabric de geojson-reader kan onderscheppen met een ESRI GeoAnalytics licentie-error.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="bronze-full">Kopieer</button>
+            </div>
+            <pre><code id="bronze-full">import json
+
+def load_geojson(name, srid=28992):
+    with open(f"/lakehouse/default/Files/bronze/{name}.geojson") as f:
+        data = json.load(f)
+
+    rows = []
+    for feat in data["features"]:
+        row = {k: (str(v) if v is not None else None)
+               for k, v in feat["properties"].items()}
+        row["geometry_json"] = json.dumps(feat["geometry"])
+        rows.append(row)
+
+    df = spark.createDataFrame(rows)
+    df.createOrReplaceTempView(f"raw_{name}")
+
+    cols = [c for c in df.columns if c != "geometry_json"]
+    col_list = ", ".join(f"`{c}`" for c in cols)
+
+    sedona.sql(f"""
+        CREATE OR REPLACE TEMP VIEW bronze_{name} AS
+        SELECT {col_list},
+               ST_SetSRID(ST_GeomFromGeoJSON(geometry_json), {srid}) AS geom
+        FROM raw_{name}
+    """)
+
+for name in ["provincies", "buurten", "stations"]:
+    load_geojson(name)</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 7</span>
+                <h3>Silver: filteren op Flevoland en opschonen</h3>
+                <p>
+                  In Silver maken we de ruwe Bronze-data bruikbaar voor analyse. Eerst halen we de provinciegrens
+                  van Flevoland uit de provincielaag. Die grens gebruiken we daarna als ruimtelijk filter voor
+                  buurten en stations met <code>ST_Intersects</code>.
+                </p>
+              </div>
+            </div>
+            <ul class="rules">
+              <li><strong>Waarom dit nodig is:</strong> Bronze bevat heel Nederland; de workshopcasus gaat alleen over Flevoland.</li>
+              <li><strong>Wat er gebeurt met buurten:</strong> alleen buurten die Flevoland raken blijven over.</li>
+              <li><strong>Datakwaliteit:</strong> negatieve CBS-sentinelwaarden worden omgezet naar <code>NULL</code>, zodat ze niet meetellen als echte waarden.</li>
+              <li><strong>Wat er gebeurt met stations:</strong> alleen stations binnen Flevoland blijven beschikbaar voor de OV-analyse.</li>
+            </ul>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 8</span>
+                <h3>Gold: OV-score en woningverdeling</h3>
+                <p>
+                  In Gold maken we analyseklare uitkomsten voor besluitvorming. Per buurt berekenen we de afstand
+                  tot het dichtstbijzijnde station, maken we OV-bufferzones voor de kaart en verdelen we de
+                  woningopgave van 100.000 woningen over buurten.
+                </p>
+              </div>
+            </div>
+            <ul class="rules">
+              <li><strong>Afstand tot station:</strong> <code>ST_Distance</code> bepaalt de minimale afstand tussen buurtgeometrie en stations.</li>
+              <li><strong>OV-zones:</strong> <code>ST_Buffer</code> maakt 500m-, 1000m- en 2000m-zones rond stations voor Fabric Maps.</li>
+              <li><strong>OV-score:</strong> buurten dichter bij een station krijgen een hogere score van 1 tot 5.</li>
+              <li><strong>Woningverdeling:</strong> de demo verdeelt 100.000 woningen gewogen op <code>ov_score * woningvoorraad</code>.</li>
+            </ul>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Download</span>
+                <h3>Code voor stap 7 en 8 als één bestand</h3>
+                <p>
+                  Gebruik dit bestand in de notebook na stap 6. Het bevat alle Silver- en Gold-queries in de juiste volgorde,
+                  zodat deelnemers niet zes losse codeblokken hoeven te kopiëren.
+                </p>
+              </div>
+              <a class="primary-button" href="flevoland-stap-7-8.py" download>Download code</a>
+            </div>
+            <pre><code>Bestand: flevoland-stap-7-8.py
+Bevat:
+- Stap 7a: silver_flevoland
+- Stap 7b: silver_buurten
+- Stap 7c: silver_stations
+- Stap 8a: gold_buurt_score
+- Stap 8b: gold_ov_zones
+- Stap 8c: gold_woningopgave</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 9</span>
+                <h3>Materialiseren als Delta-tabellen</h3>
+                <p>De Data Agent leest Delta-tabellen, geen temp views. De Sedona <code>geom</code>-kolom gaat eruit.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="materialize-full">Kopieer</button>
+            </div>
+            <pre><code id="materialize-full">def materialize(view, table):
+    schema_df = sedona.sql(f"SELECT * FROM {view} LIMIT 0")
+    cols = [c for c in schema_df.columns if c != "geom"]
+    col_list = ", ".join(f"`{c}`" for c in cols)
+    sedona.sql(f"SELECT {col_list} FROM {view}") \
+        .write.mode("overwrite") \
+        .option("overwriteSchema", "true") \
+        .saveAsTable(table)
+
+materialize("gold_buurt_score",  "gold_buurt_score")
+materialize("gold_woningopgave", "gold_woningopgave")</code></pre>
+          </article>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <h2>Deel 3 — Visualisatie & AI</h2>
+            <p>Exporteer slimme GeoJSON-lagen, bouw de Fabric Map en voeg de Nederlandstalige Data Agent toe.</p>
+          </div>
+        </div>
+
+        <div class="code-grid">
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 10</span>
+                <h3>Exporteren naar GeoJSON voor Fabric Maps</h3>
+                <p>Fabric Maps leest GeoJSON uit Lakehouse Files. De export transformeert EPSG:28992 naar EPSG:4326.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="export-full">Kopieer</button>
+            </div>
+            <pre><code id="export-full">import os
+os.makedirs("/lakehouse/default/Files/maps", exist_ok=True)
+
+def export_to_geojson(view, filename):
+    schema_df = sedona.sql(f"SELECT * FROM {view} LIMIT 0")
+    cols = [c for c in schema_df.columns if c != "geom"]
+    col_list = ", ".join(f"`{c}`" for c in cols) if cols else ""
+    select_cols = f"{col_list}, " if col_list else ""
+
+    df = sedona.sql(f"""
+        SELECT {select_cols}
+               ST_AsGeoJSON(ST_Transform(geom, 'EPSG:28992', 'EPSG:4326')) AS geometry_json
+        FROM {view}
+    """).toPandas()
+
+    features = []
+    for _, row in df.iterrows():
+        props = {c: row[c] for c in df.columns if c != "geometry_json"}
+        features.append({
+            "type": "Feature",
+            "properties": props,
+            "geometry": json.loads(row["geometry_json"])
+        })
+
+    feature_collection = {"type": "FeatureCollection", "features": features}
+
+    path = f"/lakehouse/default/Files/maps/{filename}.geojson"
+    with open(path, "w") as f:
+        json.dump(feature_collection, f)
+    print(f"Geschreven: {path}  ({len(features)} features)")
+
+export_to_geojson("silver_flevoland",   "flevoland")
+export_to_geojson("silver_stations",    "stations")
+export_to_geojson("gold_ov_zones",      "ov_zones")
+export_to_geojson("gold_woningopgave",  "buurt_score")</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 11</span>
+                <h3>Fabric Maps aanmaken en lagen toevoegen</h3>
+                <p>Klik in de workspace op <strong>New item</strong>, kies <strong>Map</strong>, gebruik Lakehouse <code>test</code> als bron en voeg de GeoJSON-lagen toe van onder naar boven.</p>
+              </div>
+            </div>
+            <figure class="new-item-image">
+              <img src="fabric-new-item.svg" alt="Maps Workshop workspace met de New item knop">
+              <figcaption>Gebruik <strong>New item</strong> om het Map-item voor Fabric Maps aan te maken.</figcaption>
+            </figure>
+            <table class="agenda-table">
+              <thead>
+                <tr><th>Volgorde</th><th>Laag</th><th>Bestand</th><th>Type</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1</td><td>Provinciegrens</td><td><code>flevoland.geojson</code></td><td>Polygoon</td></tr>
+                <tr><td>2</td><td>OV-bereikbaarheid</td><td><code>ov_zones.geojson</code></td><td>Polygoon</td></tr>
+                <tr><td>3</td><td>Woningverdeling</td><td><code>buurt_score.geojson</code></td><td>Polygoon</td></tr>
+                <tr><td>4</td><td>Stations</td><td><code>stations.geojson</code></td><td>Punt</td></tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 12</span>
+                <h3>Lagen stijlen op data</h3>
+                <p>Style de kaart zodat het verhaal direct zichtbaar is voor planners en bestuurders.</p>
+              </div>
+            </div>
+            <table class="agenda-table">
+              <thead>
+                <tr><th>Laag</th><th>Stijling</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>flevoland</code></td><td>Lichte vulling, donkere rand — zet de scope.</td></tr>
+                <tr><td><code>ov_zones</code></td><td>Vulling met 70% transparantie, kleur per buffer-afstand.</td></tr>
+                <tr><td><code>buurt_score</code></td><td>Color by field → <code>te_bouwen_woningen</code>, licht naar donker.</td></tr>
+                <tr><td><code>stations</code></td><td>Punt-marker, label op <code>naam</code>.</td></tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 13</span>
+                <h3>Data Agent aanmaken</h3>
+                <p>Klik in de workspace op <strong>New item</strong>, kies <strong>Data Agent</strong>, gebruik Lakehouse <code>test</code> als bron en selecteer de gematerialiseerde Gold-tabellen.</p>
+              </div>
+            </div>
+            <figure class="new-item-image">
+              <img src="fabric-new-item.svg" alt="Maps Workshop workspace met de New item knop">
+              <figcaption>Gebruik <strong>New item</strong> om de Data Agent aan te maken.</figcaption>
+            </figure>
+            <pre><code>New → Data Agent
+Bron: Lakehouse test
+
+Selecteer:
+- gold_buurt_score
+- gold_woningopgave</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 14</span>
+                <h3>Nederlandstalige Data Agent-instructies</h3>
+                <p>Plak deze instructies in de Data Agent zodat antwoorden consistent en uitlegbaar zijn.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="agent-full">Kopieer instructies</button>
+            </div>
+            <pre><code id="agent-full">Je bent een data-assistent voor de woningplanning van Provincie Flevoland.
+Je beantwoordt vragen over de buurten in Flevoland en het Woondeal-doel
+van 100.000 nieuwe woningen vóór 2030.
+
+BEREKENINGSREGELS:
+- 'te_bouwen_woningen' is een gewogen verdeling van 100.000 woningen
+  over buurten op basis van OV-bereikbaarheid en huidige woningvoorraad.
+- 'ov_score' loopt van 1 (slecht bereikbaar) tot 5 (binnen 500m van station).
+
+ANTWOORDSTIJL:
+- Antwoord altijd in het Nederlands.
+- Geef getallen afgerond op hele woningen.
+- Bij vragen over een specifieke gemeente: groepeer per buurt binnen die gemeente.
+- Toon waar mogelijk de top 5 buurten en het totaal.</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Demo-vragen</span>
+                <h3>Vragen voor de Data Agent</h3>
+                <p>Gebruik deze vragen live om van kaart naar bestuurlijk gesprek te gaan.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="agent-questions-full">Kopieer vragen</button>
+            </div>
+            <pre><code id="agent-questions-full">Hoeveel buurten heeft Flevoland?
+
+Hoeveel woningen moeten er volgens het plan in Almere worden gebouwd?
+
+Welke 5 buurten krijgen de meeste nieuwe woningen, en waarom?
+
+Hoeveel van de 100.000 woningen komen binnen 500 meter van een station?
+
+Vergelijk Almere en Lelystad: waar moeten we prioriteit geven?</code></pre>
+          </article>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <h2>Wat heeft de cursist geleerd?</h2>
+            <p>Deel II verbindt data-engineering, spatial SQL, Fabric Maps en AI-governance in één end-to-end scenario.</p>
+          </div>
+        </div>
+        <div class="pillar-grid">
+          <article class="pillar-card">
+            <span class="notebook-step">1. Ingestie</span>
+            <h3>PDOK naar Bronze</h3>
+            <p>Open data als GeoJSON uploaden naar Lakehouse Files en als Sedona views registreren.</p>
+          </article>
+          <article class="pillar-card">
+            <span class="notebook-step">2. Transformatie</span>
+            <h3>Spatial SQL met Sedona</h3>
+            <p>ST_Intersects, ST_Distance, ST_Buffer en ST_Transform gebruiken binnen Fabric notebooks.</p>
+          </article>
+          <article class="pillar-card">
+            <span class="notebook-step">3. Visualisatie</span>
+            <h3>Fabric Maps</h3>
+            <p>Gold-lagen exporteren als compacte GeoJSON-bestanden voor kaartlagen in Lakehouse Files.</p>
+          </article>
+          <article class="pillar-card">
+            <span class="notebook-step">4. AI</span>
+            <h3>Data Agent</h3>
+            <p>Gematerialiseerde Gold-tabellen gebruiken voor Nederlandstalige vragen over de Woondeal.</p>
+          </article>
+        </div>
+
+        <aside class="facilitator-note">
+          <div>
+            <h3>Afronding Deel II</h3>
+            <p>
+              Rond Deel II af wanneer de groep de volledige pipeline kan uitleggen:
+              PDOK WFS naar Bronze, Silver, Gold, Fabric Maps en Data Agent.
+            </p>
+          </div>
+          <button
+            class="complete-toggle"
+            type="button"
+            data-complete-step="5"
+            data-label="Markeer Deel II afgerond"
+            data-completed-label="Deel II afgerond"
+          >Markeer Deel II afgerond</button>
+        </aside>
+      </section>
+
+      <section class="lab-section" id="deel-2-pipeline-archive" aria-labelledby="deel-2-pipeline-archive-title" hidden aria-hidden="true">
+        <div class="section-heading">
+          <div>
+            <h2 id="deel-2-pipeline-archive-title">Deel II: Microsoft Fabric Maps — Woningplanning Provincie Flevoland</h2>
+            <p>
+              In dit deel bouwt de data-engineer een complete geo-analytische oplossing:
+              van open PDOK-data tot een interactieve kaart en een Nederlandstalige Data Agent
+              voor strategische vragen over de Woondeal Flevoland: 100.000 nieuwe woningen voor 2030.
+            </p>
+          </div>
+        </div>
+
+        <div class="section-heading" id="wfs-bronnen">
+          <div>
+            <h2>WFS-bronnen voor Deel II</h2>
+            <p>
+              Deze links zijn de start van de Flevoland-pipeline. WFS levert echte features
+              met geometrie en attributen; anders dan WMS is het dus geschikt om in een notebook
+              op te halen, te filteren, te verrijken en als Bronze-data vast te leggen.
+            </p>
+          </div>
+        </div>
+
+        <aside class="facilitator-note">
+          <div>
+            <h3>Wat houdt WFS in?</h3>
+            <p>
+              WFS staat voor Web Feature Service. Waar WMS vooral een kaartbeeld teruggeeft,
+              geeft WFS objecten terug: bijvoorbeeld provinciegrenzen, buurten of stations.
+              Daardoor kun je ruimtelijke berekeningen doen, zoals filteren op Flevoland,
+              afstanden tot stations bepalen en buurten scoren voor woningbouw.
+            </p>
+          </div>
+          <a class="primary-button" href="#deel-2-pipeline">Deel II pipeline</a>
+        </aside>
+
+        <div class="code-grid">
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Provincies en gemeenten</span>
+                <h3>Bestuurlijke Gebieden WFS</h3>
+                <p>Gebruik deze service voor bestuurlijke grenzen, zoals provincies en gemeenten. In de pipeline filter je hiermee naar Flevoland.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="wfs-bestuurlijkegebieden">Kopieer link</button>
+            </div>
+            <pre><code id="wfs-bestuurlijkegebieden">https://service.pdok.nl/kadaster/bestuurlijkegebieden/wfs/v1_0?service=WFS&amp;request=GetCapabilities</code></pre>
+            <p><a href="https://service.pdok.nl/kadaster/bestuurlijkegebieden/wfs/v1_0?service=WFS&amp;request=GetCapabilities" target="_blank" rel="noreferrer">Open Bestuurlijke Gebieden WFS</a></p>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Buurten en CBS-statistieken</span>
+                <h3>CBS Wijken en Buurten 2024 WFS</h3>
+                <p>Gebruik deze service voor buurtgeometrieën en statistische kenmerken. Dit is de basis voor buurtanalyse en woningverdeling.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="wfs-wijkenbuurten">Kopieer link</button>
+            </div>
+            <pre><code id="wfs-wijkenbuurten">https://service.pdok.nl/cbs/wijkenbuurten/2024/wfs/v1_0?service=WFS&amp;request=GetCapabilities</code></pre>
+            <p><a href="https://service.pdok.nl/cbs/wijkenbuurten/2024/wfs/v1_0?service=WFS&amp;request=GetCapabilities" target="_blank" rel="noreferrer">Open CBS Wijken en Buurten 2024 WFS</a></p>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">OV en stations</span>
+                <h3>ProRail Spoorwegen WFS</h3>
+                <p>Gebruik deze service voor spoorinformatie, inclusief stations. In Gold bereken je hiermee OV-bereikbaarheid per buurt.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="wfs-spoorwegen">Kopieer link</button>
+            </div>
+            <pre><code id="wfs-spoorwegen">https://service.pdok.nl/prorail/spoorwegen/wfs/v1_0?service=WFS&amp;request=GetCapabilities</code></pre>
+            <p><a href="https://service.pdok.nl/prorail/spoorwegen/wfs/v1_0?service=WFS&amp;request=GetCapabilities" target="_blank" rel="noreferrer">Open ProRail Spoorwegen WFS</a></p>
+          </article>
+        </div>
+
+        <div class="architecture-flow" aria-label="Architectuur van Deel II">
+          <span class="notebook-step">Architectuur in één oogopslag</span>
+          <div class="flow-row">
+            <span class="flow-node">PDOK WFS</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Bronze GeoJSON</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Silver Sedona views</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Gold analyse</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-node">Fabric Maps</span>
+            <span class="flow-node">Data Agent</span>
+          </div>
+          <table class="agenda-table">
+            <thead>
+              <tr>
+                <th>Laag</th>
+                <th>Principe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Bronze</td>
+                <td>Ruw, ongewijzigd en traceerbaar.</td>
+              </tr>
+              <tr>
+                <td>Silver</td>
+                <td>Opgeschoond, geconformeerd en ruimtelijk gefilterd tot Flevoland.</td>
+              </tr>
+              <tr>
+                <td>Gold</td>
+                <td>Business-ready, geaggregeerd en klaar voor Fabric Maps en Data Agent.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-grid">
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 1</span>
+                <h3>Sedona activeren in de Fabric notebook</h3>
+                <p>Apache Sedona wordt de spatial-engine bovenop Spark. Daarna kun je ruimtelijke queries schrijven met ST_-functies.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-sedona">Kopieer</button>
+            </div>
+            <pre><code id="deel2-sedona">%%configure -f
+{
+    "conf": {
+        "spark.jars.packages": "org.apache.sedona:sedona-spark-3.4_2.12:1.5.1,org.datasyslab:geotools-wrapper:1.5.1-28.2",
+        "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+        "spark.kryo.registrator": "org.apache.sedona.core.serde.SedonaKryoRegistrator"
+    }
+}
+
+# Nieuwe notebookcel
+%pip install apache-sedona==1.5.1
+from sedona.spark import SedonaContext
+
+sedona = SedonaContext.create(SedonaContext.builder().getOrCreate())</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 2</span>
+                <h3>Bronze: open data ophalen van PDOK</h3>
+                <p>Drie GeoJSON-bestanden landen in <code>Files/bronze/</code>: provincies, buurten en stations.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-bronze">Kopieer</button>
+            </div>
+            <pre><code id="deel2-bronze">import json
+
+def load_geojson(name, srid=28992):
+    with open(f"/lakehouse/default/Files/bronze/{name}.geojson") as f:
+        data = json.load(f)
+
+    rows = [
+        {
+            **{
+                k: str(v) if v is not None else None
+                for k, v in feat["properties"].items()
+            },
+            "geometry_json": json.dumps(feat["geometry"])
+        }
+        for feat in data["features"]
+    ]
+
+    df = spark.createDataFrame(rows)
+    df.createOrReplaceTempView(f"raw_{name}")
+
+    cols = ", ".join(f"`{c}`" for c in df.columns if c != "geometry_json")
+    sedona.sql(f"""
+        CREATE OR REPLACE TEMP VIEW bronze_{name} AS
+        SELECT {cols},
+               ST_SetSRID(ST_GeomFromGeoJSON(geometry_json), {srid}) AS geom
+        FROM raw_{name}
+    """)
+
+load_geojson("provincies")
+load_geojson("buurten")
+load_geojson("stations")</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 3</span>
+                <h3>Silver: opschonen en filteren tot Flevoland</h3>
+                <p>Bronze bevat heel Nederland. Silver beperkt het studiegebied tot Flevoland met één ruimtelijke join.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-silver">Kopieer</button>
+            </div>
+            <pre><code id="deel2-silver">CREATE OR REPLACE TEMP VIEW silver_flevoland AS
+SELECT geom
+FROM bronze_provincies
+WHERE naam = 'Flevoland';
+
+CREATE OR REPLACE TEMP VIEW silver_buurten AS
+SELECT b.*
+FROM bronze_buurten b
+JOIN silver_flevoland f
+  ON ST_Intersects(b.geom, f.geom);
+
+CREATE OR REPLACE TEMP VIEW silver_stations AS
+SELECT s.*
+FROM bronze_stations s
+JOIN silver_flevoland f
+  ON ST_Intersects(s.geom, f.geom);</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 4</span>
+                <h3>Gold: OV-bereikbaarheid berekenen per buurt</h3>
+                <p>Voor elke buurt bereken je afstand tot het dichtstbijzijnde station en een OV-score van 1 tot 5.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-ov">Kopieer</button>
+            </div>
+            <pre><code id="deel2-ov">CREATE OR REPLACE TEMP VIEW gold_buurt_score AS
+SELECT b.*,
+       MIN(ST_Distance(b.geom, s.geom)) AS min_afstand_station_m
+FROM silver_buurten b
+CROSS JOIN silver_stations s
+GROUP BY &lt;alle kolommen van b&gt;;</code></pre>
+            <p class="details-panel" style="display:block">
+              Voeg daarnaast <code>gold_ov_zones</code> toe met buffers van 500m, 1000m en 2000m rond stations voor de kaartvisualisatie.
+            </p>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 5</span>
+                <h3>Gold: woningverdeling berekenen</h3>
+                <p>Verdeel de 100.000 woningen uit de Woondeal over buurten, gewogen op OV-score en woningvoorraad.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-woningen">Kopieer</button>
+            </div>
+            <pre><code id="deel2-woningen">gewicht = ov_score * woningvoorraad
+te_bouwen_woningen = ROUND(100000 * gewicht / SUM(gewicht))</code></pre>
+            <p class="details-panel" style="display:block">
+              Governance-keuze: CBS gebruikt negatieve sentinel-waarden voor geheime cijfers in kleine buurten.
+              Die worden niet hard in Silver verwijderd, maar expliciet geïnstrueerd aan de Data Agent.
+            </p>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 6</span>
+                <h3>Materialiseren als Delta-tabellen</h3>
+                <p>Temp views zijn niet genoeg: de Data Agent leest Delta-tabellen. De Sedona <code>geom</code>-kolom wordt weggelaten.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-materialize">Kopieer</button>
+            </div>
+            <pre><code id="deel2-materialize">def materialize(view, table):
+    cols = [
+        c for c in sedona.sql(f"SELECT * FROM {view} LIMIT 0").columns
+        if c != "geom"
+    ]
+    col_list = ", ".join(f"`{c}`" for c in cols)
+
+    sedona.sql(f"SELECT {col_list} FROM {view}") \
+        .write.mode("overwrite") \
+        .option("overwriteSchema", "true") \
+        .saveAsTable(table)
+
+materialize("gold_buurt_score", "gold_buurt_score")</code></pre>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 7</span>
+                <h3>Exporteren naar GeoJSON voor Fabric Maps</h3>
+                <p>Fabric Maps gebruikt GeoJSON uit Lakehouse Files. Houd minder dan 200 properties per feature aan en transformeer naar WGS84.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-export">Kopieer</button>
+            </div>
+            <pre><code id="deel2-export">ST_AsGeoJSON(ST_Transform(geom, 'EPSG:28992', 'EPSG:4326'))</code></pre>
+            <table class="agenda-table">
+              <tbody>
+                <tr><td>Waarom slim exporteren?</td><td>De ruwe buurtenlaag heeft 200+ CBS-kolommen. Fabric Maps heeft een limiet van 200 properties per feature.</td></tr>
+                <tr><td>Waarom transformeren?</td><td>PDOK-data staat vaak in EPSG:28992. Fabric Maps werkt met latitude/longitude in EPSG:4326.</td></tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 8</span>
+                <h3>Fabric Maps configureren</h3>
+                <p>Voeg vier GeoJSON-lagen toe aan de kaart en gebruik ze voor beleid, analyse en discussie.</p>
+              </div>
+            </div>
+            <table class="agenda-table">
+              <thead>
+                <tr>
+                  <th>Laag</th>
+                  <th>Doel</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>flevoland.geojson</code></td><td>Provinciegrens als rustige achtergrondlaag.</td></tr>
+                <tr><td><code>ov_zones.geojson</code></td><td>Transparante buffers rond stations: 500m, 1000m en 2000m.</td></tr>
+                <tr><td><code>buurt_score.geojson</code></td><td>Buurten gekleurd op <code>te_bouwen_woningen</code>.</td></tr>
+                <tr><td><code>stations.geojson</code></td><td>Stations als puntenlaag.</td></tr>
+              </tbody>
+            </table>
+            <p class="details-panel" style="display:block">
+              Didactisch moment: geen ArcGIS en geen QGIS; gewoon klikken in de browser. De business kan dit zelf.
+            </p>
+          </article>
+
+          <article class="code-card">
+            <div class="code-card-header">
+              <div>
+                <span class="notebook-step">Stap 9</span>
+                <h3>Data Agent bouwen op de Gold-laag</h3>
+                <p>Maak een Nederlandstalige AI-agent die strategische vragen beantwoordt over woningplanning en OV-bereikbaarheid.</p>
+              </div>
+              <button class="copy-code" type="button" data-copy-target="deel2-agent">Kopieer instructies</button>
+            </div>
+            <pre><code id="deel2-agent">Antwoord altijd in het Nederlands.
+Negatieve waarden zijn CBS-sentinelwaarden: sluit ze uit en vermeld hoeveel records zijn uitgesloten.
+Geef context bij elk getal: top 5, totaal en redenering.
+Bij vergelijking tussen gemeenten: groepeer per gemeente en geef een beleidsmatig advies.
+Leg uit welke aannames zijn gebruikt bij woningverdeling, OV-score en datakwaliteit.</code></pre>
+          </article>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <h2>Wat heeft de cursist geleerd?</h2>
+            <p>Deel II verbindt data-engineering, spatial SQL, Fabric Maps en AI-governance in één end-to-end scenario.</p>
+          </div>
+        </div>
+        <div class="pillar-grid">
+          <article class="pillar-card">
+            <span class="notebook-step">1. Ingestie</span>
+            <h3>PDOK WFS naar Lakehouse</h3>
+            <p>Open data ophalen, Bronze opslaan en omgaan met ESRI-conflicten door zelf GeoJSON te parsen.</p>
+          </article>
+          <article class="pillar-card">
+            <span class="notebook-step">2. Transformatie</span>
+            <h3>Spatial SQL met Sedona</h3>
+            <p>ST_Intersects, ST_Distance en ST_Transform gebruiken op schaal binnen Fabric notebooks.</p>
+          </article>
+          <article class="pillar-card">
+            <span class="notebook-step">3. Visualisatie</span>
+            <h3>Fabric Maps</h3>
+            <p>Gold-lagen exporteren als GeoJSON, inclusief property-limiet en projectieconversie.</p>
+          </article>
+          <article class="pillar-card">
+            <span class="notebook-step">4. Governance & AI</span>
+            <h3>Data Agent</h3>
+            <p>Medallion-architectuur, datakwaliteitsregels en Nederlandstalige antwoorden voor besluitvormers.</p>
+          </article>
+        </div>
+
+        <aside class="facilitator-note">
+          <div>
+            <h3>Afronding Deel II</h3>
+            <p>
+              Rond Deel II af wanneer de groep de volledige pipeline kan uitleggen:
+              PDOK WFS naar Bronze, Silver, Gold, Fabric Maps en Data Agent.
+            </p>
+          </div>
+          <button
+            class="complete-toggle"
+            type="button"
+            data-complete-step="5"
+            data-label="Markeer Deel II afgerond"
+            data-completed-label="Deel II afgerond"
+          >Markeer Deel II afgerond</button>
+        </aside>
+      </section>
+
+      <section class="two-column" id="agenda" aria-labelledby="agenda-title">
+        <div class="agenda">
+          <div class="section-heading">
+            <div>
+              <h2 id="agenda-title">Programma van 90 minuten</h2>
+              <p>Een realistische verdeling met demo, korte oefeningen, governance-discussie en bestuurlijke afsluiting.</p>
+            </div>
+          </div>
+          <table class="agenda-table">
+            <thead>
+              <tr>
+                <th>Tijd</th>
+                <th>Onderdeel</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>0-5 min</td>
+                <td>Opening en casus: verantwoord woningbouwlocaties beoordelen met geo-data en plandata.</td>
+              </tr>
+              <tr>
+                <td>5-15 min</td>
+                <td>Fabric Maps in gemeentelijke context: kaartlaag, dataset, rapport, WMS, Lakehouse en governance.</td>
+              </tr>
+              <tr>
+                <td>15-35 min</td>
+                <td>Deel I: inloggen via <code>app.fabric.microsoft.com</code> en daarna de CHS WMS-laag inladen als externe imagery layer in Fabric Maps.</td>
+              </tr>
+              <tr>
+                <td>35-45 min</td>
+                <td>Interactieve kaartinzichten: beoordeel fictieve woningbouwlocaties met openbare contextlagen.</td>
+              </tr>
+              <tr>
+                <td>45-50 min</td>
+                <td>Korte overgang: van kijken en begrijpen naar combineren met eigen data, monitoring en governance.</td>
+              </tr>
+              <tr>
+                <td>50-70 min</td>
+                <td>Deel II: volledige Flevoland-demo met setup, GeoJSON-upload, Sedona, Bronze/Silver/Gold, Fabric Maps en Data Agent.</td>
+              </tr>
+              <tr>
+                <td>70-82 min</td>
+                <td>Governance en rolgebaseerde kaartlagen: bepaal welke rollen welke Flevoland-lagen en scores mogen zien.</td>
+              </tr>
+              <tr>
+                <td>82-88 min</td>
+                <td>Eindopdracht: bestuurlijk advies over kansrijke locaties, nader onderzoek en publieke versus interne informatie.</td>
+              </tr>
+              <tr>
+                <td>88-90 min</td>
+                <td>Afsluiting: belangrijkste lessen en vervolgstappen.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="checklist" id="prepare">
+          <div class="section-heading">
+            <div>
+              <h2>Voorbereiding vooraf</h2>
+              <p>Zet de kernassets vooraf klaar, zodat de 90 minuten niet vastlopen op metadata, endpoints of performance.</p>
+            </div>
+          </div>
+          <div class="checklist-items">
+            <label class="check-item">
+              <input type="checkbox" data-prep="workspace">
+              <span>Werkende Fabric workspace met Lakehouse <code>test</code>, notebook <code>woningplanning</code> en default Lakehouse-koppeling.</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-prep="access">
+              <span>Bronbestanden klaarzetten: <code>provincies.geojson</code>, <code>buurten.geojson</code> en <code>stations.geojson</code> in EPSG:28992.</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-prep="data">
+              <span>Lakehouse-mappen klaarzetten: <code>Files/bronze/</code> en <code>Files/maps/</code>.</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-prep="tools">
+              <span>Notebookcellen vooraf klaarzetten voor Sedona-configuratie, Bronze/Silver/Gold, GeoJSON-export en Delta-materialisatie.</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-prep="owners">
+              <span>Governance-matrix en drie rolgebaseerde weergaven: planner, bestuurder en publiek.</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="two-column" id="case-assets" aria-labelledby="case-assets-title">
+        <div class="agenda">
+          <div class="section-heading">
+            <div>
+              <h2 id="case-assets-title">Leerdoelen en bronbestanden</h2>
+              <p>Deelnemers werken met echte open data en een transparante demo-berekening voor de woningopgave in Flevoland.</p>
+            </div>
+          </div>
+          <table class="agenda-table">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Laag</th>
+                <th>Gebruik</th>
+                <th>Output</th>
+                <th>Doel</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>provincies.geojson</code></td>
+                <td>Bronze/Silver</td>
+                <td>Flevoland-grens filteren</td>
+                <td><code>silver_flevoland</code></td>
+                <td><span class="badge badge-low">Scope</span></td>
+              </tr>
+              <tr>
+                <td><code>buurten.geojson</code></td>
+                <td>Bronze/Silver</td>
+                <td>Buurten + CBS-statistieken</td>
+                <td><code>silver_buurten</code></td>
+                <td><span class="badge badge-mid">Analyse</span></td>
+              </tr>
+              <tr>
+                <td><code>stations.geojson</code></td>
+                <td>Bronze/Silver</td>
+                <td>OV-bereikbaarheid bepalen</td>
+                <td><code>silver_stations</code></td>
+                <td><span class="badge badge-low">OV</span></td>
+              </tr>
+              <tr>
+                <td><code>gold_woningopgave</code></td>
+                <td>Gold</td>
+                <td>100.000 woningen verdelen</td>
+                <td>Delta + GeoJSON</td>
+                <td><span class="badge badge-high">Besluit</span></td>
+              </tr>
+              <tr>
+                <td><code>Files/maps/*.geojson</code></td>
+                <td>Maps</td>
+                <td>Visualiseren in Fabric Maps</td>
+                <td>4 kaartlagen</td>
+                <td><span class="badge badge-mid">Kaart</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="checklist">
+          <div class="section-heading">
+            <div>
+              <h2>Na 90 minuten kunnen deelnemers</h2>
+              <p>De leerdoelen blijven bewust praktisch en gericht op verantwoord toepassen.</p>
+            </div>
+          </div>
+          <div class="checklist-items">
+            <div class="check-item"><span>Een openbare WMS-laag toevoegen als externe imagery layer in Fabric Maps.</span></div>
+            <div class="check-item"><span>Uitleggen waarom WFS/GeoJSON nodig is voor analyse en WMS vooral voor kaartcontext.</span></div>
+            <div class="check-item"><span>Apache Sedona gebruiken voor ruimtelijke filtering, afstand, buffers en projectietransformatie.</span></div>
+            <div class="check-item"><span>Een Bronze/Silver/Gold-pipeline herkennen voor analyseklare geo-data.</span></div>
+            <div class="check-item"><span>Fabric Maps voeden met slimme GeoJSON-bestanden uit <code>Files/maps/</code>.</span></div>
+            <div class="check-item"><span>Een Nederlandstalige Data Agent koppelen aan gematerialiseerde Gold-tabellen.</span></div>
+            <div class="check-item"><span>Uitleggen hoe rolgebaseerde kaartlagen onderdeel zijn van governance.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="governance-matrix" aria-labelledby="governance-matrix-title">
+        <div class="agenda">
+          <div class="section-heading">
+            <div>
+              <h2 id="governance-matrix-title">Governance-matrix voor de groepsoefening</h2>
+              <p>Laat deelnemers per kaartlaag bepalen of deze openbaar, intern of vertrouwelijk is, wie de laag mag zien en of samenvatting nodig is.</p>
+            </div>
+          </div>
+          <table class="agenda-table">
+            <thead>
+              <tr>
+                <th>Kaartlaag</th>
+                <th>Planner</th>
+                <th>Bestuurder</th>
+                <th>Vergunning</th>
+                <th>Data-analist</th>
+                <th>Partner</th>
+                <th>Publiek</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Provinciegrens Flevoland</td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+              </tr>
+              <tr>
+                <td>Stations</td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+              </tr>
+              <tr>
+                <td>OV-bufferzones</td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-partial">Deels</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+              </tr>
+              <tr>
+                <td>Buurtscore</td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-partial">Samengevat</span></td>
+                <td><span class="answer-no">Nee</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-no">Nee</span></td>
+                <td><span class="answer-no">Nee</span></td>
+              </tr>
+              <tr>
+                <td><code>te_bouwen_woningen</code> per buurt</td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-partial">Samengevat</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-yes">Ja</span></td>
+                <td><span class="answer-no">Nee</span></td>
+                <td><span class="answer-no">Nee</span></td>
+              </tr>
+              <tr>
+                <td>Modelregels en weging</td>
+                <td><span class="answer-partial">Beperkt</span></td>
+                <td><span class="answer-partial">Samengevat</span></td>
+                <td><span class="answer-no">Nee</span></td>
+                <td><span class="answer-partial">Beperkt</span></td>
+                <td><span class="answer-no">Nee</span></td>
+                <td><span class="answer-no">Nee</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="resources" aria-labelledby="resources-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="resources-title">Workshopassets en resultaten</h2>
+            <p>Gebruik deze onderdelen om deelnemers te laten vertrekken met een concreet beeld van waarde, toepassing en verantwoord gebruik.</p>
+          </div>
+        </div>
+        <div class="resources">
+          <article class="card">
+            <h3>Deel I: WMS lab</h3>
+            <p>
+              Kopieerbare WMS-link en visuele stappen voor cloud connection,
+              external source toevoegen en een openbare WMS-laag tonen op de kaart.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Deel II: Flevoland-pipeline</h3>
+            <p>
+              End-to-end pipeline van PDOK WFS naar Bronze, Silver, Gold,
+              Fabric Maps en een Nederlandstalige Data Agent voor Woondeal-vragen.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Governance-matrix en views</h3>
+            <p>
+              Matrix met kaartlagen en rollen, plus plannerweergave,
+              bestuurdersweergave en publieke weergave voor verantwoord delen.
+            </p>
+          </article>
+        </div>
+
+        <aside class="facilitator-note">
+          <div>
+            <h3>Facilitator-tip</h3>
+            <p>
+              Laat deelnemers niet zoeken naar allerlei datasets tijdens de workshop.
+              Kies vooraf een of twee lagen om te bekijken en gebruik vooral
+              voorbereide bronnen zodat de flow blijft draaien.
+            </p>
+          </div>
+          <a class="primary-button" href="#top">Terug naar boven</a>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Microsoft Fabric Maps: Woningnood in Flevoland. Gebruik fictieve data en pas kaartlagen, views en governance aan op de klantcontext.</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const steps = Array.from(document.querySelectorAll(".step-card"));
+    const toggles = Array.from(document.querySelectorAll(".complete-toggle"));
+    const progressValue = document.getElementById("progressValue");
+    const progressLabel = document.getElementById("progressLabel");
+    const toast = document.getElementById("toast");
+    const savedCompleted = new Set(JSON.parse(localStorage.getItem("fabricWorkshopCompleted") || "[]"));
+    const savedPrep = new Set(JSON.parse(localStorage.getItem("fabricWorkshopPrep") || "[]"));
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function saveProgress() {
+      const completed = steps
+        .filter((step) => step.classList.contains("completed"))
+        .map((step) => step.dataset.step);
+      localStorage.setItem("fabricWorkshopCompleted", JSON.stringify(completed));
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const completeCount = steps.filter((step) => step.classList.contains("completed")).length;
+      const percent = Math.round((completeCount / steps.length) * 100);
+      progressValue.textContent = `${percent}%`;
+      progressLabel.textContent = `${completeCount} van ${steps.length} afgerond`;
+    }
+
+    function getTargetStep(button) {
+      const stepId = button.dataset.completeStep;
+      return stepId ? document.querySelector(`.step-card[data-step="${stepId}"]`) : button.closest(".step-card");
+    }
+
+    function updateToggleButtons(stepId, isComplete) {
+      toggles.forEach((button) => {
+        const target = getTargetStep(button);
+        if (!target || target.dataset.step !== stepId) {
+          return;
+        }
+
+        const defaultLabel = button.dataset.label || "Markeer afgerond";
+        const completedLabel = button.dataset.completedLabel || "Afgerond";
+        button.classList.toggle("completed", isComplete);
+        button.textContent = isComplete ? completedLabel : defaultLabel;
+      });
+    }
+
+    toggles.forEach((button) => {
+      const step = getTargetStep(button);
+      if (!step) {
+        return;
+      }
+
+      if (savedCompleted.has(step.dataset.step)) {
+        step.classList.add("completed");
+        updateToggleButtons(step.dataset.step, true);
+      }
+
+      button.addEventListener("click", () => {
+        const isComplete = step.classList.toggle("completed");
+        updateToggleButtons(step.dataset.step, isComplete);
+        saveProgress();
+      });
+    });
+
+    document.querySelectorAll(".details-link").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const card = link.closest(".step-card");
+        const expanded = card.classList.toggle("expanded");
+        link.textContent = expanded ? "Verberg begeleiding" : "Toon begeleiding";
+      });
+    });
+
+    document.querySelectorAll(".filter-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const filter = chip.dataset.filter;
+        document.querySelectorAll(".filter-chip").forEach((item) => item.classList.remove("active"));
+        chip.classList.add("active");
+        steps.forEach((step) => {
+          const categories = step.dataset.category.split(" ");
+          step.hidden = filter !== "all" && !categories.includes(filter);
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-prep]").forEach((checkbox) => {
+      if (savedPrep.has(checkbox.dataset.prep)) {
+        checkbox.checked = true;
+      }
+
+      checkbox.addEventListener("change", () => {
+        const checked = Array.from(document.querySelectorAll("[data-prep]:checked")).map((item) => item.dataset.prep);
+        localStorage.setItem("fabricWorkshopPrep", JSON.stringify(checked));
+      });
+    });
+
+    document.getElementById("copyAgenda").addEventListener("click", async () => {
+      const rows = Array.from(document.querySelectorAll("#agenda .agenda-table tbody tr"));
+      const agenda = rows
+        .map((row) => Array.from(row.children).map((cell) => cell.textContent.trim()).join(" - "))
+        .join("\n");
+
+      try {
+        await navigator.clipboard.writeText(`Microsoft Fabric Maps: Woningnood in Flevoland - agenda\n${agenda}`);
+        showToast("Agenda gekopieerd naar klembord.");
+      } catch {
+        showToast("Kopiëren naar klembord is niet beschikbaar in deze browser.");
+      }
+    });
+
+    document.querySelectorAll("[data-copy-target]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        if (!target) {
+          showToast("Codeblok niet gevonden.");
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(target.textContent.trim());
+          const originalText = button.textContent;
+          button.textContent = "Gekopieerd";
+          showToast("Code gekopieerd naar klembord.");
+          window.setTimeout(() => {
+            button.textContent = originalText;
+          }, 1600);
+        } catch {
+          showToast("Kopiëren naar klembord is niet beschikbaar in deze browser.");
+        }
+      });
+    });
+
+    updateProgress();
+  </script>
+</body>
+</html>
